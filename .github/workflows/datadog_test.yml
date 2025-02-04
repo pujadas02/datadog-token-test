@@ -38,7 +38,8 @@ jobs:
                     "text": "The GitHub token will expire in '"$DAYS_UNTIL_EXPIRY"' days. Please renew it soon.",
                     "tags": ["token:github", "status:expiry_warning"],
                     "priority": "normal"
-                  }'
+                  }' \
+              "https://api.datadoghq.com/api/v1/events"
           else
             echo "Token is valid for $DAYS_UNTIL_EXPIRY days. No action needed."
           fi
