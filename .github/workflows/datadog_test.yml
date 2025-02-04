@@ -1,1 +1,36 @@
+name: Monitor GitHub Token Expiry
+
+on:
+  workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI
+
+jobs:
+  check-token-expiry:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check GitHub Token Expiry
+        run: |
+          # Use the GitHub token stored in GitHub Secrets
+          GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}  # Reference your stored GitHub Token
+          
+          # GitHub token expiration date (stored as a GitHub secret)
+          EXPIRATION_DATE=${{ secrets.GITHUB_TOKEN_EXPIRY_DATE }}  # Example: "2025-02-10T00:00:00Z"
+          
+          # Convert the expiration date to Unix timestamp (in seconds)
+          EXPIRATION_TIMESTAMP=$(date -d "$EXPIRATION_DATE" +%s)
+          CURRENT_TIMESTAMP=$(date +%s)
+          
+          # Calculate how many days until token expiry
+          DAYS_UNTIL_EXPIRY=$((($EXPIRATION_TIMESTAMP - $CURRENT_TIMESTAMP) / 86400))
+          
+          echo "Token expires in $DAYS_UNTIL_EXPIRY days."
+          
+          # Step 2: Check if the token is expiring within the next 7 days
+          if [ "$DAYS_UNTIL_EXPIRY" -le 7 ]; then
+            echo "Token is expiring soon! Sending alert to Datadog."
+            
+            # Send a custom Datadog event about the token expiry
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "DD-API-KEY: ${{ secrets.DATADOG
 
