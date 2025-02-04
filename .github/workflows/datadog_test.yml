@@ -14,7 +14,7 @@ jobs:
           GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}  # Reference your stored GitHub Token
           
           # GitHub token expiration date (stored as a GitHub secret)
-          EXPIRATION_DATE=${{ secrets.GITHUB_TOKEN_EXPIRY_DATE }}  # Example: "2025-02-10T00:00:00Z"
+          EXPIRATION_DATE=${{ secrets.PGITHUB_TOKEN_EXPIRY_DATE }}  # Corrected secret name here
           
           # Convert the expiration date to Unix timestamp (in seconds)
           EXPIRATION_TIMESTAMP=$(date -d "$EXPIRATION_DATE" +%s)
@@ -32,5 +32,13 @@ jobs:
             # Send a custom Datadog event about the token expiry
             curl -X POST \
               -H "Content-Type: application/json" \
-              -H "DD-API-KEY: ${{ secrets.DATADOG
-
+              -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+              -d '{
+                    "title": "GitHub Token Expiry Warning",
+                    "text": "The GitHub token will expire in '"$DAYS_UNTIL_EXPIRY"' days. Please renew it soon.",
+                    "tags": ["token:github", "status:expiry_warning"],
+                    "priority": "normal"
+                  }'
+          else
+            echo "Token is valid for $DAYS_UNTIL_EXPIRY days. No action needed."
+          fi
