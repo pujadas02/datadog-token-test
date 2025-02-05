@@ -24,7 +24,17 @@ jobs:
           DAYS_UNTIL_EXPIRY=$((($EXPIRATION_TIMESTAMP - $CURRENT_TIMESTAMP) / 86400))
           
           echo "Token expires in $DAYS_UNTIL_EXPIRY days."
-          
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "title": "GitHub Token Expiry Warning",
+                  "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days.",
+                  "tags": ["token:github", "status:expiry_warning"],
+                  "priority": "normal"
+                }' \
+            "https://api.datadoghq.com/api/v1/events"
+
           # # Step 2: Check if the token is expiring within the next 7 days
           # if [ "$DAYS_UNTIL_EXPIRY" -le 7 ]; then
           #   echo "Token is expiring soon! Sending alert to Datadog."
