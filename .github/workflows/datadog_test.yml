@@ -2,7 +2,7 @@ name: Monitor GitHub Token Expiry
 
 on:
   schedule:
-  - cron:  '48 1,13 * * *'
+  - cron:  '00 2,14 * * *'
 
   workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI
 
