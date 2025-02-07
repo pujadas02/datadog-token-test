@@ -4,6 +4,15 @@ on:
   schedule:
   - cron: '46 8 * * *'  # 8:46 AM UTC (equivalent to 2:22 PM IST)
 
+# Step 1: Convert Local Time to UTC
+# Local time: 2:22 PM IST (India Standard Time).
+# UTC offset: India Standard Time (IST) is UTC +5:30.
+# To convert 2:22 PM IST to UTC, subtract 5 hours and 30 minutes:
+# 2:22 PM IST → 8:52 AM UTC.
+# Step 2: Account for the 6-Minute Delay
+# Based on your previous observation, the workflow was running about 6 minutes later than expected. To account for this delay, we'll adjust the cron expression 6 minutes earlier.
+# 8:52 AM UTC → Adjusted to 8:46 AM UTC.
+
 
   workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI
 
