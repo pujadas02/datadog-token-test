@@ -1,6 +1,9 @@
 name: Monitor GitHub Token Expiry
 
 on:
+  schedule:
+  - cron: "*/2 * * * *"
+
   workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI
 
 jobs:
@@ -29,7 +32,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "title": "GitHub Token Expiry Warning",
-                  "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days.",
+                  "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days puja here .",
                   "tags": ["token:github", "status:expiry_warning"],
                   "priority": "normal"
                 }' \
