@@ -2,7 +2,9 @@ name: Monitor GitHub Token Expiry
 
 on:
   schedule:
-  - cron: '46 8 * * *'  # 8:46 AM UTC (equivalent to 2:22 PM IST)
+  - cron: '50 8 * * *'  # 8:50 AM UTC (equivalent to 2:26 PM IST)
+
+
 
 # Step 1: Convert Local Time to UTC
 # Local time: 2:22 PM IST (India Standard Time).
