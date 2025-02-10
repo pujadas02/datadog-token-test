@@ -54,7 +54,7 @@ jobs:
            "https://api.datadoghq.com/api/v1/series"
             #       "title": "GitHub Token Expiry Warning",
             #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
-            #       "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"'days"],
+                  "tags": ["token:github", "status:expiry_warning", "expiry:10 days"],
             #       "priority": "normal"
             #     }' \
             # "https://api.datadoghq.com/api/v1/events"
