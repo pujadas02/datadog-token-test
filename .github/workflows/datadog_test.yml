@@ -48,13 +48,13 @@ jobs:
                   "metric": "github.token.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY"']],
                   "type": "gauge",
-                  "tags": ["token:github", "status:expiry_warning"]
+                  "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"' days"]
                           }]
               }' \
            "https://api.datadoghq.com/api/v1/series"
             #       "title": "GitHub Token Expiry Warning",
             #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
-                  "tags": ["token:github", "status:expiry_warning", "expiry:10 days"],
+                  # "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"' days"],
             #       "priority": "normal"
             #     }' \
             # "https://api.datadoghq.com/api/v1/events"
