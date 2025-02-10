@@ -44,28 +44,19 @@ jobs:
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
-                  "title": "GitHub Token Expiry Warning",
-                  "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
-                  "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"'days"],
-                  "priority": "normal"
-                }' \
-            "https://api.datadoghq.com/api/v1/events"
+                  "series": [{
+                  "metric": "github.token.expiry.days_left",
+                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY"']],
+                  "type": "gauge",
+                  "tags": ["token:github", "status:expiry_warning"]
+                          }]
+              }' \
+           "https://api.datadoghq.com/api/v1/series"
+            #       "title": "GitHub Token Expiry Warning",
+            #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
+            #       "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"'days"],
+            #       "priority": "normal"
+            #     }' \
+            # "https://api.datadoghq.com/api/v1/events"
 
-          # # Step 2: Check if the token is expiring within the next 7 days
-          # if [ "$DAYS_UNTIL_EXPIRY" -le 7 ]; then
-          #   echo "Token is expiring soon! Sending alert to Datadog."
-            
-          #   # Send a custom Datadog event about the token expiry
-          #   curl -X POST \
-          #     -H "Content-Type: application/json" \
-          #     -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-          #     -d '{
-          #           "title": "GitHub Token Expiry Warning",
-          #           "text": "The GitHub token will expire in '"$DAYS_UNTIL_EXPIRY"' days. Please renew it soon.",
-          #           "tags": ["token:github", "status:expiry_warning"],
-          #           "priority": "normal"
-          #         }' \
-          #     "https://api.datadoghq.com/api/v1/events"
-          # else
-          #   echo "Token is valid for $DAYS_UNTIL_EXPIRY days. No action needed."
-          # fi
+      
