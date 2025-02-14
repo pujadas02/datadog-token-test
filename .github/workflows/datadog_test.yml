@@ -31,26 +31,26 @@ jobs:
               }' \
            "https://api.datadoghq.com/api/v1/series"
 
-      - name: Check GitHub Token Expiry for PUJA_2
-        run: |
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          EXPIRATION_DATE_2="2025-04-15T00:00:00Z"  # Token 2 expiration date
-          EXPIRATION_TIMESTAMP_2=$(date -d "$EXPIRATION_DATE_2" +%s)
-          DAYS_UNTIL_EXPIRY_2=$((($EXPIRATION_TIMESTAMP_2 - $CURRENT_TIMESTAMP) / 86400))
-          echo "Github PUJA_2 is going to expire in $DAYS_UNTIL_EXPIRY_2 days."
+      # - name: Check GitHub Token Expiry for PUJA_2
+      #   run: |
+      #     GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      #     EXPIRATION_DATE_2="2025-04-15T00:00:00Z"  # Token 2 expiration date
+      #     EXPIRATION_TIMESTAMP_2=$(date -d "$EXPIRATION_DATE_2" +%s)
+      #     DAYS_UNTIL_EXPIRY_2=$((($EXPIRATION_TIMESTAMP_2 - $CURRENT_TIMESTAMP) / 86400))
+      #     echo "Github PUJA_2 is going to expire in $DAYS_UNTIL_EXPIRY_2 days."
 
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "github.2nd.token.expiry.days_left",
-                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_2"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "token:puja_2", "status:expiry_warning"]
-                          }]
-              }' \
-           "https://api.datadoghq.com/api/v1/series"
+      #     curl -X POST \
+      #       -H "Content-Type: application/json" \
+      #       -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+      #       -d '{
+      #             "series": [{
+      #             "metric": "github.2nd.token.expiry.days_left",
+      #             "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_2"']],
+      #             "type": "gauge",
+      #             "tags": ["source:github", "token:puja_2", "status:expiry_warning"]
+      #                     }]
+      #         }' \
+      #      "https://api.datadoghq.com/api/v1/series"
 
             #       "title": "GitHub Token Expiry Warning",
             #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
