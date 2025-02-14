@@ -2,56 +2,57 @@ name: Monitor GitHub Token Expiry
 
 on:
   schedule:
-  - cron: '0 0 * * *'  # 9:01 AM UTC (equivalent to 2:31 PM IST)
-
-
-
-
-# Step 1: Convert Local Time to UTC
-# Local time: 2:22 PM IST (India Standard Time).
-# UTC offset: India Standard Time (IST) is UTC +5:30.
-# To convert 2:22 PM IST to UTC, subtract 5 hours and 30 minutes:
-# 2:22 PM IST → 8:52 AM UTC.
-# Step 2: Account for the 6-Minute Delay
-# Based on your previous observation, the workflow was running about 6 minutes later than expected. To account for this delay, we'll adjust the cron expression 6 minutes earlier.
-# 8:52 AM UTC → Adjusted to 8:46 AM UTC.
-
-
-  workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI
+  - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   check-token-expiry:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Check GitHub Token Expiry
+      - name: Check GitHub Token Expiry for Token 1
         run: |
-          # Use the GitHub token stored in GitHub Secrets
-          GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}  # Reference your stored GitHub Token
-          
-          # GitHub token expiration date (stored as a GitHub secret)
-          EXPIRATION_DATE=${{ secrets.PGITHUB_TOKEN_EXPIRY_DATE }}  # Corrected secret name here
-          
-          # Convert the expiration date to Unix timestamp (in seconds)
-          EXPIRATION_TIMESTAMP=$(date -d "$EXPIRATION_DATE" +%s)
+          GITHUB_TOKEN_1=${{ secrets.GITHUB_TOKEN_1 }}
+          EXPIRATION_DATE_1="2026-02-03T00:00:00Z"
+          EXPIRATION_TIMESTAMP_1=$(date -d "$EXPIRATION_DATE_1" +%s)
           CURRENT_TIMESTAMP=$(date +%s)
-          
-          # Calculate how many days until token expiry
-          DAYS_UNTIL_EXPIRY=$((($EXPIRATION_TIMESTAMP - $CURRENT_TIMESTAMP) / 86400))
-          
-          echo "Token expires in $DAYS_UNTIL_EXPIRY days."
+          DAYS_UNTIL_EXPIRY_1=$((($EXPIRATION_TIMESTAMP_1 - $CURRENT_TIMESTAMP) / 86400))
+          echo "Github USER_READONLY_TOKEN 1 is going to expire in $DAYS_UNTIL_EXPIRY_1 days."
+
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
                   "metric": "github.token.expiry.days_left",
-                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY"']],
+                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_1"']],
                   "type": "gauge",
-                  "tags": ["source:github", "status:expiry_warning"]
+                  "tags": ["source:github", "token:token_1", "status:expiry_warning"]
                           }]
               }' \
-           "https://api.datadoghq.com/api/v1/series"
+           "https://api.us3.datadoghq.com/api/v1/series"
+
+      - name: Check GitHub Token Expiry for Token 2
+        run: |
+          GITHUB_TOKEN_2=${{ secrets.GITHUB_TOKEN_2 }}
+          EXPIRATION_DATE_2="2026-03-01T00:00:00Z"
+          EXPIRATION_TIMESTAMP_2=$(date -d "$EXPIRATION_DATE_2" +%s)
+          DAYS_UNTIL_EXPIRY_2=$((($EXPIRATION_TIMESTAMP_2 - $CURRENT_TIMESTAMP) / 86400))
+          echo "Github USER_READONLY_TOKEN 2 is going to expire in $DAYS_UNTIL_EXPIRY_2 days."
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                  "metric": "github.token.expiry.days_left",
+                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_2"']],
+                  "type": "gauge",
+                  "tags": ["source:github", "token:token_2", "status:expiry_warning"]
+                          }]
+              }' \
+           "https://api.us3.datadoghq.com/api/v1/series"
+
             #       "title": "GitHub Token Expiry Warning",
             #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
                   # "tags": ["token:github", "status:expiry_warning", "expiry:'"$DAYS_UNTIL_EXPIRY"' days"],
