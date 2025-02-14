@@ -10,13 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Set up environment variables
-        run: |
-          CURRENT_TIMESTAMP=$(date +%s)
-    
       - name: Check GitHub Token Expiry for PUJA_1
         run: |
-          GITHUB_TOKEN_1=${{ secrets.PUJA_1 }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           EXPIRATION_DATE_1="2025-03-16T00:00:00Z"  # Token 1 expiration date
           EXPIRATION_TIMESTAMP_1=$(date -d "$EXPIRATION_DATE_1" +%s)
           DAYS_UNTIL_EXPIRY_1=$((($EXPIRATION_TIMESTAMP_1 - $CURRENT_TIMESTAMP) / 86400))
@@ -27,17 +23,17 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                  "metric": "github.token.expiry.days_left",
+                  "metric": "github.1st.token.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_1"']],
                   "type": "gauge",
                   "tags": ["source:github", "token:puja_1", "status:expiry_warning"]
                           }]
               }' \
-           "https://api.us3.datadoghq.com/api/v1/series"
+           "https://api.datadoghq.com/api/v1/series"
 
       - name: Check GitHub Token Expiry for PUJA_2
         run: |
-          GITHUB_TOKEN_2=${{ secrets.PUJA_2 }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           EXPIRATION_DATE_2="2025-04-15T00:00:00Z"  # Token 2 expiration date
           EXPIRATION_TIMESTAMP_2=$(date -d "$EXPIRATION_DATE_2" +%s)
           DAYS_UNTIL_EXPIRY_2=$((($EXPIRATION_TIMESTAMP_2 - $CURRENT_TIMESTAMP) / 86400))
@@ -48,13 +44,13 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                  "metric": "github.token.expiry.days_left",
+                  "metric": "github.2nd.token.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY_2"']],
                   "type": "gauge",
                   "tags": ["source:github", "token:puja_2", "status:expiry_warning"]
                           }]
               }' \
-           "https://api.us3.datadoghq.com/api/v1/series"
+           "https://api.datadoghq.com/api/v1/series"
 
             #       "title": "GitHub Token Expiry Warning",
             #       "text": "Token expires in '"$DAYS_UNTIL_EXPIRY"' days kunmun    here .",
