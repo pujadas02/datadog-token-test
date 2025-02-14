@@ -13,7 +13,7 @@ jobs:
       - name: Check GitHub Token Expiry
         run: |
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          EXPIRATION_DATE1="2025-03-16T00:00:00Z"  
+          EXPIRATION_DATE1="2025-02-19T00:00:00Z"  
           EXPIRATION_TIMESTAMP1=$(date -d "$EXPIRATION_DATE1" +%s)
           CURRENT_TIMESTAMP1=$(date +%s)
           DAYS_UNTIL_EXPIRY1=$((($EXPIRATION_TIMESTAMP1 - $CURRENT_TIMESTAMP1) / 86400))
