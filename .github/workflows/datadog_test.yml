@@ -43,7 +43,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                  "metric": "github.2nd.token.expiry.days_left",
+                  "metric": "github.1st.token.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY2"']],
                   "type": "gauge",
                   "tags": ["source:github", "token:puja_2", "status:expiry_warning"]
