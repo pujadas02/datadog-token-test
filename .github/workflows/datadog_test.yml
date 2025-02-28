@@ -26,7 +26,7 @@ jobs:
                   "metric": "github.1st.token.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY1"']],
                   "type": "gauge",
-                  "tags": ["source:github", "tok:puja_1", "status:expiry_warning"]
+                  "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
