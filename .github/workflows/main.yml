@@ -1,4 +1,4 @@
-name: Terraform Version Monitoring
+name: Monitor Terraform and Azurerm Versions from TF Files
 
 on:
   push:
@@ -7,38 +7,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  monitor-terraform-version:
+  monitor-versions:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "1.3.0"  # Specify a newer version of Terraform
-
-      - name: Run terraform init
-        run: |
-          terraform init
-
-      - name: Get Terraform Version
+      - name: Read Terraform Version from .tf file
         id: tf_version
         run: |
-          VERSION_RAW=$(terraform -version)
-          echo "Terraform version output: $VERSION_RAW"
+          # Extract Terraform version from required_version in main.tf
+          TF_VERSION=$(grep -oP 'required_version\s*=\s*"\K[^\"]+' main.tf)
+          if [ -z "$TF_VERSION" ]; then
+            echo "Terraform version not found in main.tf"
+            exit 1
+          fi
+          echo "Terraform version found: $TF_VERSION"
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
 
-          # Extract version using regex
-          VERSION=$(echo "$VERSION_RAW" | grep -oP '^Terraform \K[\d\.]+')
-          echo "Terraform version is $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to environment for the next step
-
-      - name: Send Terraform Version to Datadog
+      - name: Read Azurerm Provider Version from .tf file
+        id: azurerm_version
         run: |
-          VERSION="${{ env.VERSION }}"  # Use the environment variable set in the previous step
+          # Extract Azurerm provider version from main.tf
+          AZURERM_VERSION=$(grep -oP 'azurerm\s*=\s*{\s*version\s*=\s*"\K[^\"]+' main.tf)
+          if [ -z "$AZURERM_VERSION" ]; then
+            echo "Azurerm provider version not found in main.tf"
+            exit 1
+          fi
+          echo "Azurerm provider version found: $AZURERM_VERSION"
+          echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+
+      - name: Send Terraform Version and Azurerm Version to Datadog
+        run: |
+          VERSION="${{ env.TF_VERSION }}"
+          AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
           TIMESTAMP=$(date +%s)
-          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')  # Convert version (e.g., 1.6.2 → 10602)
+          
+          # Convert version (e.g., 1.6.2 → 10602)
+          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
+          AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
 
           # Send the version data to Datadog
           curl -X POST \
@@ -50,6 +58,12 @@ jobs:
                     "points": [['"$(date +%s)"', '"$VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
+                  },
+                  {
+                    "metric": "azurerm.provider.version",
+                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
+                    "type": "gauge",
+                    "tags": ["source:github", "repo:${{ github.repository }}", "version:$AZURERM_VERSION"]
                   }]
               }' \
-           "https://api.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
+           "https://api.datadoghq.com/api/v1/series"
