@@ -88,13 +88,14 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "azurerm.provider.version",
+                    "metric": "az.provider_version",
                     "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$AZURERM_VERSION"]
                   }]
               }' \
-           "https://api.us5.datadoghq.com/api/v1/series"
+           "https://api.us5.datadoghq.com/api/v1/series" \
+            || echo "Error sending metric to Datadog"
       - name: Check GitHub Token Expiry
         run: |
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -116,85 +117,4 @@ jobs:
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
 
-# name: Monitor Terraform and Azurerm Versions from TF Files
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-
-# jobs:
-#   monitor-versions:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
-
-#       - name: List Files in the Repository (Debugging Step)
-#         run: |
-#           echo "Listing files to ensure the .tf files are present"
-#           ls -la
-
-#       - name: Read Terraform Version from .tf file
-#         id: tf_version
-#         run: |
-#           # Debugging: Show content of main.tf
-#           echo "Main.tf content:"
-#           cat main.tf
-
-#           # Extract Terraform version from required_version in main.tf
-#           TF_VERSION=$(grep -oP 'required_version\s*=\s*"\K[^\"]+' main.tf)
-#           echo "Terraform version found: $TF_VERSION"
-#           if [ -z "$TF_VERSION" ]; then
-#             echo "Terraform version not found in main.tf"
-#             exit 1
-#           fi
-#           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
-
-#       - name: Read Azurerm Provider Version from .tf file
-#         id: azurerm_version
-#         run: |
-#           # Debugging: Show content of main.tf again
-#           echo "Main.tf content (again):"
-#           cat main.tf
-
-#           # Try to extract the azurerm version with a more flexible pattern
-#           AZURERM_VERSION=$(grep -oP 'version\s*=\s*"\K[^\"]+' main.tf)
-#           echo "Azurerm version found: $AZURERM_VERSION"
-#           if [ -z "$AZURERM_VERSION" ]; then
-#             echo "Azurerm version not found in main.tf"
-#             exit 1
-#           fi
-#           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
-
-#       - name: Send Terraform Version and Azurerm Version to Datadog
-#         run: |
-#           VERSION="${{ env.TF_VERSION }}"
-#           AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
-#           TIMESTAMP=$(date +%s)
-          
-#           # Convert version (e.g., 1.6.2 → 10602)
-#           VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-#           AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-
-#           # Send the version data to Datadog
-#           curl -X POST \
-#             -H "Content-Type: application/json" \
-#             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-#             -d '{
-#                   "series": [{
-#                     "metric": "terraform.cli.version",
-#                     "points": [['"$(date +%s)"', '"$VERSION_NUMERIC"']],
-#                     "type": "gauge",
-#                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
-#                   },
-#                   {
-#                     "metric": "azurerm.provider.version",
-#                     "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
-#                     "type": "gauge",
-#                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$AZURERM_VERSION"]
-#                   }]
-#               }' \
-#            "https://api.us5.datadoghq.com/api/v1/series"
