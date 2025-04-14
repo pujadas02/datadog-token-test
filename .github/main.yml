@@ -1,0 +1,63 @@
+name: Terraform Version Monitoring
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  monitor-terraform-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.2.3"  # Optional: You can specify the exact version of Terraform here
+
+      - name: Run terraform init
+        run: |
+          # Initialize Terraform, this downloads provider plugins and sets up the backend
+          terraform init
+
+      - name: Check Terraform Version
+        id: tf_version
+        run: |
+          # Get the installed Terraform version
+          VERSION=$(terraform -version | head -n 1 | awk '{print $2}' | sed 's/v//')
+          echo "Terraform version is $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate Terraform Configuration (optional)
+        run: |
+          # Validate the Terraform configuration to ensure no issues before proceeding
+          terraform validate
+
+      - name: Run terraform plan (optional, to ensure the configuration works)
+        run: |
+          # Run terraform plan to simulate the changes Terraform will make, this step is optional
+          terraform plan -out=plan.tfplan
+
+      - name: Send Terraform Version to Datadog
+        run: |
+          # Extract the version from the output and send it to Datadog
+          VERSION="${{ steps.tf_version.outputs.version }}"
+          TIMESTAMP=$(date +%s)
+          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')  # e.g. 1.6.2 → 10602
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d "{
+              \"series\": [{
+                \"metric\": \"terraform.cli.version\",
+                \"points\": [[$TIMESTAMP, $VERSION_NUMERIC]],
+                \"type\": \"gauge\",
+                \"tags\": [\"source:github\", \"repo:${{ github.repository }}\", \"version:$VERSION\"]
+              }]
+            }" \
+            "https://api.us3.datadoghq.com/api/v1/series"
