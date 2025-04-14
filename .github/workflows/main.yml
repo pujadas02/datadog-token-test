@@ -94,7 +94,7 @@ jobs:
            -v
       - name: Check GitHub Token Expiry
         run: |
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      
           EXPIRATION_DATE1="2025-02-19T00:00:00Z"  
           EXPIRATION_TIMESTAMP1=$(date -d "$EXPIRATION_DATE1" +%s)
           CURRENT_TIMESTAMP1=$(date +%s)
@@ -105,7 +105,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                  "metric": "token.expiry.days_left",
+                  "metric": "oken.expiry.days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY1"']],
                   "type": "gauge",
                   "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
