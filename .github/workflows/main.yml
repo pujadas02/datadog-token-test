@@ -52,4 +52,5 @@ jobs:
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
                   }]
               }' \
-           "https://api.us5.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
+          "https://api.us5.datadoghq.com/api/v1/series"
+
