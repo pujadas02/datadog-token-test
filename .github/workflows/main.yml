@@ -78,10 +78,6 @@ jobs:
         run: |
           AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
           TIMESTAMP=$(date +%s)
-
-          # Convert Azurerm version (e.g., 3.1.2 → 30102)
-          AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-
           # Send Azurerm version to Datadog
           curl -X POST \
             -H "Content-Type: application/json" \
@@ -89,13 +85,13 @@ jobs:
             -d '{
                   "series": [{
                   "metric": "az.provider_version",
-                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
+                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
                   "type": "gauge",
                   "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series" \
-            || echo "Error sending metric to Datadog"
+           -v
       - name: Check GitHub Token Expiry
         run: |
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
