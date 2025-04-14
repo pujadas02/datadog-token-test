@@ -111,16 +111,17 @@ jobs:
 
       - name: Send Azurerm Version to Datadog (Again)
         run: |
-          AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
-          TIMESTAMP=$(date +%s)
-          AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
+         AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
+         echo "Sending AZURERM_VERSION: $AZURERM_VERSION"  # Debugging step to print AZURERM_VERSION
+         AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | sed 's/~>//' | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
+         echo "Numeric version: $AZURERM_VERSION_NUMERIC"
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
                   "metric": "az.provider_version",
-                  "points": [['"$(date +%s)"', 1]],
+                  "points": [['"$(date +%s)"', "$AZURERM_VERSION_NUMERIC"]],
                   "type": "gauge",
                   "tags": ["source:github", "status:version"]
                           }]
