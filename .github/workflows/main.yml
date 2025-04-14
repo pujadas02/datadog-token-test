@@ -1,0 +1,49 @@
+name: Terraform Version Monitoring
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  monitor-terraform-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Run terraform init
+        run: |
+          terraform init
+
+      - name: Get Terraform Version
+        id: tf_version
+        run: |
+          VERSION=$(terraform -version | head -n 1 | awk '{print $2}' | sed 's/v//')
+          echo "Terraform version is $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Send Terraform Version to Datadog
+        run: |
+          VERSION="${{ steps.tf_version.outputs.version }}"
+          TIMESTAMP=$(date +%s)
+          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }') # e.g. 1.6.2 → 10602
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d "{
+              \"series\": [{
+                \"metric\": \"terraform.cli.version\",
+                \"points\": [[$TIMESTAMP, $VERSION_NUMERIC]],
+                \"type\": \"gauge\",
+                \"tags\": [\"source:github\", \"repo:${{ github.repository }}\", \"version:$VERSION\"]
+              }]
+            }" \
+            "https://api.us5.datadoghq.com/api/v1/series"
+
