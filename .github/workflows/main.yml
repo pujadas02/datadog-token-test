@@ -26,24 +26,24 @@ jobs:
         run: |
           VERSION=$(terraform -version | head -n 1 | awk '{print $2}' | sed 's/v//')
           echo "Terraform version is $VERSION"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version as an environment variable for the next step
 
       - name: Send Terraform Version to Datadog
         run: |
-          VERSION="${{ steps.tf_version.outputs.version }}"
+          VERSION="${{ env.VERSION }}"  # Use the environment variable set in the previous step
           TIMESTAMP=$(date +%s)
-          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }') # e.g. 1.6.2 → 10602
+          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')  # Convert version (e.g., 1.6.2 → 10602)
 
+          # Send the version data to Datadog
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d "{
-              \"series\": [{
-                \"metric\": \"terraform.cli.version\",
-                \"points\": [[$TIMESTAMP, $VERSION_NUMERIC]],
-                \"type\": \"gauge\",
-                \"tags\": [\"source:github\", \"repo:${{ github.repository }}\", \"version:$VERSION\"]
-              }]
-            }" \
-            "https://api.us5.datadoghq.com/api/v1/series"
-
+            -d '{
+                  "series": [{
+                    "metric": "terraform.cli.version",
+                    "points": [['"$(date +%s)"', '"$VERSION_NUMERIC"']],
+                    "type": "gauge",
+                    "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
+                  }]
+              }' \
+           "https://api.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
