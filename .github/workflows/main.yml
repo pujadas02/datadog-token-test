@@ -17,10 +17,6 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Verify Terraform Version
-        run: |
-          terraform -version  # Ensure terraform is working and the version is printed correctly
-
       - name: Run terraform init
         run: |
           terraform init
@@ -31,7 +27,7 @@ jobs:
           VERSION_RAW=$(terraform -version)
           echo "Terraform version output: $VERSION_RAW"
 
-          # Extract version using regex or text processing
+          # Extract version using regex
           VERSION=$(echo "$VERSION_RAW" | grep -oP '^Terraform \K[\d\.]+')
           echo "Terraform version is $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to environment for the next step
@@ -54,4 +50,4 @@ jobs:
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
                   }]
               }' \
-           "https://api.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
+           "https://api.us5.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
