@@ -19,7 +19,7 @@ jobs:
 
       - name: Verify Terraform Version
         run: |
-          terraform -version  # Make sure terraform is working
+          terraform -version  # Ensure terraform is working and the version is printed correctly
 
       - name: Run terraform init
         run: |
@@ -30,9 +30,11 @@ jobs:
         run: |
           VERSION_RAW=$(terraform -version)
           echo "Terraform version output: $VERSION_RAW"
-          VERSION=$(echo $VERSION_RAW | head -n 1 | awk '{print $2}' | sed 's/v//')
+
+          # Extract version using regex or text processing
+          VERSION=$(echo "$VERSION_RAW" | grep -oP '^Terraform \K[\d\.]+')
           echo "Terraform version is $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version as an environment variable for the next step
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to environment for the next step
 
       - name: Send Terraform Version to Datadog
         run: |
@@ -52,5 +54,4 @@ jobs:
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
                   }]
               }' \
-          "https://api.us5.datadoghq.com/api/v1/series"
-
+           "https://api.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
