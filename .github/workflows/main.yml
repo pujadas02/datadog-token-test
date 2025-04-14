@@ -48,25 +48,6 @@ jobs:
             exit 1
           fi
           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
-
-      - name: Send Terraform Version to Datadog
-        run: |
-          TF_VERSION="${{ env.TF_VERSION }}"
-          echo "Sending Terraform Version: $TF_VERSION"  # Debugging step to print TF_VERSION
-          TF_VERSION_NUMERIC=$(echo $TF_VERSION | awk -F. '{ printf("%d%02d", $1,$2) }')
-          echo "Numeric Terraform version: $TF_VERSION_NUMERIC"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                    "metric": "terraform.cli.version",
-                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
-                    "type": "gauge",
-                    "tags": ["source:github", "status:version"]
-                            }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series"
       - name: Send Azurerm Version to Datadog (Again)
         run: |
            AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
