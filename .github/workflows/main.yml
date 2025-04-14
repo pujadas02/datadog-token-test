@@ -76,9 +76,8 @@ jobs:
 
       - name: Send Azurerm Version to Datadog
         run: |
-          AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
-          TIMESTAMP=$(date +%s)
-          # Send Azurerm version to Datadog
+          AZURERM_VERSION="~> 4.19.0"  
+          echo "AZURERM_VERSION: $AZURERM_VERSION"
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
