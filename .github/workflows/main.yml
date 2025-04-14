@@ -157,9 +157,9 @@ jobs:
              -d '{
                  "series": [{
                  "metric": "azf.provider_version",
-                 "points": [['"$(date +%s)"', 1]], 
+                 "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']], 
                  "type": "gauge",
-                 "tags": ["source:github", "status:version", "version:$AZURERM_VERSION"]
+                 "tags": ["source:github", "status:version"]
                 }]
              }' \
           "https://api.us5.datadoghq.com/api/v1/series"
