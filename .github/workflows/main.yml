@@ -84,7 +84,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                  "metric": "az.provider_version",
+                  "metric": "token.expiry_me",
                   "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
                   "type": "gauge",
                   "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
