@@ -88,11 +88,11 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "az.provider_version",
-                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
-                    "type": "gauge",
-                    "tags": ["source:github", "repo:${{ github.repository }}", "version:$AZURERM_VERSION"]
-                  }]
+                  "metric": "az.provider_version",
+                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
+                  "type": "gauge",
+                  "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
+                          }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series" \
             || echo "Error sending metric to Datadog"
