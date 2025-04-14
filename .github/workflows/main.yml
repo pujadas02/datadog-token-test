@@ -51,71 +51,28 @@ jobs:
 
       - name: Send Terraform Version to Datadog
         run: |
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          VERSION="${{ env.TF_VERSION }}"
-          TIMESTAMP=$(date +%s)
-          
-          # Convert version (e.g., 1.6.2 → 10602)
-          VERSION_NUMERIC=$(echo $VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-          # Send Terraform version to Datadog
+          TF_VERSION="${{ env.TF_VERSION }}"
+          echo "Sending Terraform Version: $TF_VERSION"  # Debugging step to print TF_VERSION
+          TF_VERSION_NUMERIC=$(echo $TF_VERSION | awk -F. '{ printf("%d%02d", $1,$2) }')
+          echo "Numeric Terraform version: $TF_VERSION_NUMERIC"
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
                     "metric": "terraform.cli.version",
-                    "points": [['"$(date +%s)"', '"$VERSION_NUMERIC"']],
+                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
                             }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
-
-      - name: Send Azurerm Version to Datadog
-        run: |
-          AZURERM_VERSION="~> 4.19.0"  
-          echo "AZURERM_VERSION: $AZURERM_VERSION"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "version.expiry_me",
-                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
-                          }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series" \
-           -v
-
-      - name: Check GitHub Token Expiry
-        run: |
-          EXPIRATION_DATE1="2025-02-19T00:00:00Z"  
-          EXPIRATION_TIMESTAMP1=$(date -d "$EXPIRATION_DATE1" +%s)
-          CURRENT_TIMESTAMP1=$(date +%s)
-          DAYS_UNTIL_EXPIRY1=$((($EXPIRATION_TIMESTAMP1 - $CURRENT_TIMESTAMP1) / 86400))
-          echo "Github PUJA_1 is going to expire in $DAYS_UNTIL_EXPIRY1 days."
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "token.expiry.days_left",
-                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY1"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "tok:*puja_1*", "status:expiry_warning"]
-                          }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series"
-
       - name: Send Azurerm Version to Datadog (Again)
         run: |
            AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
            echo "Sending AZURERM_VERSION: $AZURERM_VERSION"  # Debugging step to print AZURERM_VERSION
            AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | sed 's/~>//' | awk -F. '{ printf("%d%02d", $1,$2) }')
-              echo "Numeric version: $AZURERM_VERSION_NUMERIC"
-
+           echo "Numeric version: $AZURERM_VERSION_NUMERIC"
            curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
@@ -129,36 +86,4 @@ jobs:
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
 
-      - name: Send Test Metric to Datadog
-        run: |
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                    "metric": "test.metric",
-                    "points": [['"$(date +%s)"', 1]],
-                    "type": "gauge",
-                    "tags": ["source:github", "test:metric"]
-                            }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series" \
-           -v
-      - name: Send Azurerm Version to Datadog (Again)
-        run: |
-          AZURERM_VERSION="4.19.0"
-          echo "Sending AZURERM_VERSION: $AZURERM_VERSION"  # Debugging step to print AZURERM_VERSION
-          AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | sed 's/~>//' | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-          echo "Numeric version: $AZURERM_VERSION_NUMERIC"
-          curl -X POST \
-             -H "Content-Type: application/json" \
-             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-             -d '{
-                 "series": [{
-                 "metric": "azf.provider_version",
-                 "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']], 
-                 "type": "gauge",
-                 "tags": ["source:github", "status:version"]
-                }]
-             }' \
-          "https://api.us5.datadoghq.com/api/v1/series"
+  
