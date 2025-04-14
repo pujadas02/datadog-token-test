@@ -14,28 +14,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: List Files in the Repository (Debugging Step)
+        run: |
+          echo "Listing files to ensure the .tf files are present"
+          ls -la
+
       - name: Read Terraform Version from .tf file
         id: tf_version
         run: |
+          # Debugging: Show content of main.tf
+          echo "Main.tf content:"
+          cat main.tf
+
           # Extract Terraform version from required_version in main.tf
           TF_VERSION=$(grep -oP 'required_version\s*=\s*"\K[^\"]+' main.tf)
+          echo "Terraform version found: $TF_VERSION"
           if [ -z "$TF_VERSION" ]; then
             echo "Terraform version not found in main.tf"
             exit 1
           fi
-          echo "Terraform version found: $TF_VERSION"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
 
       - name: Read Azurerm Provider Version from .tf file
         id: azurerm_version
         run: |
-          # Extract Azurerm provider version from main.tf
-          AZURERM_VERSION=$(grep -oP 'azurerm\s*=\s*{\s*version\s*=\s*"\K[^\"]+' main.tf)
+          # Debugging: Show content of main.tf again
+          echo "Main.tf content (again):"
+          cat main.tf
+
+          # Try to extract the azurerm version with a more flexible pattern
+          AZURERM_VERSION=$(grep -oP 'version\s*=\s*"\K[^\"]+' main.tf)
+          echo "Azurerm version found: $AZURERM_VERSION"
           if [ -z "$AZURERM_VERSION" ]; then
-            echo "Azurerm provider version not found in main.tf"
+            echo "Azurerm version not found in main.tf"
             exit 1
           fi
-          echo "Azurerm provider version found: $AZURERM_VERSION"
           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
 
       - name: Send Terraform Version and Azurerm Version to Datadog
