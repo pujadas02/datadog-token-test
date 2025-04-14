@@ -79,4 +79,4 @@ jobs:
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$AZURERM_VERSION"]
                   }]
               }' \
-           "https://api.datadoghq.com/api/v1/series"
+           "https://api.us5.datadoghq.com/api/v1/series"
