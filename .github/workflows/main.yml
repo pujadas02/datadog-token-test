@@ -120,7 +120,7 @@ jobs:
             -d '{
                   "series": [{
                   "metric": "azm.provider_version",
-                  "points": [['"$(date +%s)"', "'"$AZURERM_VERSION"'"]],
+                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
                   "type": "gauge",
                   "tags": ["source:github", "status:version"]
                           }]
