@@ -16,6 +16,8 @@ jobs:
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.3.0"  # Specify a newer version of Terraform
 
       - name: Run terraform init
         run: |
@@ -50,4 +52,4 @@ jobs:
                     "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
                   }]
               }' \
-           "https://api.us5.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
+           "https://api.datadoghq.com/api/v1/series"  # Use the correct Datadog API URL
