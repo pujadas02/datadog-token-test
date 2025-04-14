@@ -111,26 +111,6 @@ jobs:
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
-
-                      
-      - name: Send Azurerm Version to Datadog
-        run: |
-          AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
-          TIMESTAMP=$(date +%s)
-          AZURERM_VERSION_NUMERIC=$(echo $AZURERM_VERSION | awk -F. '{ printf("%d%02d%02d", $1,$2,$3) }')
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "az.provider_version",
-                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "status:version"]
-                          }]
-              }' \
-          "https://api.us5.datadoghq.com/api/v1/series" 
-     
           - name: Send Simple Test Metric to Datadog
             run: |
                curl -X POST \
