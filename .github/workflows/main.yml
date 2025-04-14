@@ -130,3 +130,20 @@ jobs:
                           }]
               }' \
           "https://api.us5.datadoghq.com/api/v1/series" 
+     
+          - name: Send Simple Test Metric to Datadog
+            run: |
+               curl -X POST \
+                  -H "Content-Type: application/json" \
+                  -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+                  -d '{
+                       "series": [{
+                       "metric": "test.metric",
+                       "points": [['"$(date +%s)"', 1]],
+                       "type": "gauge",
+                       "tags": ["source:github", "env:test"]
+                               }]
+                  }' \
+              "https://api.us5.datadoghq.com/api/v1/series" \
+               -v
+
