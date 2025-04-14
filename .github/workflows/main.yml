@@ -63,7 +63,7 @@ jobs:
                     "metric": "terraform.cli.version",
                     "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
                     "type": "gauge",
-                    "tags": ["source:github", "repo:${{ github.repository }}", "version:$VERSION"]
+                    "tags": ["source:github", "status:version"]
                             }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
@@ -86,4 +86,22 @@ jobs:
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
 
+      - name: Send Terraform Version to Datadog (Again)
+        run: |
+            TF_VERSION="${{ env.TF_VERSION }}"
+            echo "Sending TF_VERSION: $TF_VERSION" 
+            TF_VERSION_NUMERIC=$(echo $TF_VERSION | sed 's/~>//' | awk -F. '{ printf("%d%02d", $1,$2) }')
+            echo "Numeric Terraform version: $TF_VERSION_NUMERIC"
+            curl -X POST \
+                 -H "Content-Type: application/json" \
+                 -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+                 -d '{
+                      "series": [{
+                      "metric": "terraform.cli.version",
+                      "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
+                      "type": "gauge",
+                       "tags": ["source:github", "status:version"]
+                                }]
+                      }' \
+                  "https://api.us5.datadoghq.com/api/v1/series"
   
