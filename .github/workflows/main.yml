@@ -87,19 +87,36 @@ jobs:
                   "https://api.us5.datadoghq.com/api/v1/series"
       - name: Send Terraform Version to Datadog
         run: |
-           TF_VERSION="${{ env.TF_VERSION }}"
-            echo "Sending TF_VERSION: $TF_VERSION"  # Debugging step to print TF_VERSION
+            TF_VERSION="${{ env.TF_VERSION }}"
+            echo "Sending TF_VERSION: $TF_VERSION"
             curl -X POST \
                        -H "Content-Type: application/json" \
                        -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
                        -d '{
                              "series": [{
                                "metric": "terraform.cli.version",
-                                "points": [['"$(date +%s)"', 1]],  # Send '1' as a dummy value to track presence
+                                "points": [['"$(date +%s)"', 1]],
                                "type": "gauge",
-                               "tags": ["source:github", "version:$TF_VERSION"]  # Send version as a tag
+                               "tags": ["source:github", "version:$TF_VERSION"]
                                         }]
                            }' \
                          "https://api.us5.datadoghq.com/api/v1/series"
 
-
+      - name: Send Terraform Version to Datadog
+        run: |
+          TF_VERSION="${{ env.TF_VERSION }}"
+          echo "Sending TF_VERSION: $TF_VERSION"  # Debugging step to print TF_VERSION
+          TF_VERSION_NUMERIC=$(echo $TF_VERSION | sed 's/^[^0-9]*//g' | awk -F. '{ printf("%d%02d", $1,$2) }')
+          echo "Numeric version: $TF_VERSION_NUMERIC"
+          curl -X POST \
+                  -H "Content-Type: application/json" \
+                  -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+                  -d '{
+                     "series": [{
+                     "metric": "form.cli.version",
+                     "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
+                     "type": "gauge",
+                     "tags": ["source:github", "status:version"]
+                              }]
+                      }' \
+                  "https://api.us5.datadoghq.com/api/v1/series"
