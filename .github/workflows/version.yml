@@ -7,18 +7,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  monitor-terraform-version:
+  terraform:
+    name: Run Terraform and Report Version
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "1.5.7"  # Specify the version to install (optional)
-
+          terraform_version: "latest"
+          terraform_wrapper: false
       - name: Initialize Terraform
         run: terraform init  # Initialize Terraform
 
