@@ -91,7 +91,7 @@ jobs:
             -d '{
                   "series": [{
                   "metric": "days_left",
-                  "points": [['"$(date +%s)"', 1]],
+                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY2"']],
                   "type": "gauge",
                   "tags": ["source:github", "tok:puja_2", "status:expiry_warning"]
                           }]
