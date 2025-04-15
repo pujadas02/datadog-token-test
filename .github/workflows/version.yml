@@ -9,29 +9,43 @@ on:
 jobs:
   monitor-terraform-version:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "1.5.7"  
+          terraform_version: "1.5.7"  # Specify the version to install (optional)
 
       - name: Initialize Terraform
-        run: terraform init  
+        run: terraform init  # Initialize Terraform
 
       - name: Fetch Terraform Version
+        id: get-tf-version
         run: |
           TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
-          echo "Terraform Version: $TF_VERSION"
+          echo "Terraform version detected: $TF_VERSION"
+          echo "::set-output name=terraform-version::$TF_VERSION"
+
+      - name: Fetch azurerm Provider Version
+        id: get-azurerm-version
+        run: |
+          AZURERM_VERSION=$(terraform providers | grep "azurerm" | awk '{print $2}')
+          echo "azurerm provider version detected: $AZURERM_VERSION"
+          echo "::set-output name=azurerm-version::$AZURERM_VERSION"
+
+      - name: Send Terraform Version to Datadog
+        run: |
+          TF_VERSION="${{ steps.get-tf-version.outputs.terraform-version }}"
+          echo "Sending Terraform version: $TF_VERSION to Datadog"
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "tform.version",
+                    "metric": "terraform.version",
                     "points": [['"$(date +%s)"', '"$TF_VERSION"']],
                     "type": "gauge",
                     "tags": ["env:github", "status:version"]
@@ -39,3 +53,19 @@ jobs:
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
 
+      - name: Send azurerm Version to Datadog
+        run: |
+          AZURERM_VERSION="${{ steps.get-azurerm-version.outputs.azurerm-version }}"
+          echo "Sending azurerm version: $AZURERM_VERSION to Datadog"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                    "metric": "azurerm.provider_version",
+                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
+                    "type": "gauge",
+                    "tags": ["env:github", "status:version"]
+                  }]
+                }' \
+            "https://api.us5.datadoghq.com/api/v1/series"
