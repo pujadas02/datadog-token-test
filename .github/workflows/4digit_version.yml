@@ -1,0 +1,81 @@
+name: Terraform Version Monitoring
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Run Terraform and Report Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Fetch Terraform Version
+        id: get-tf-version
+        run: |
+          TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
+          TF_VERSION_CLEAN=$(echo "$TF_VERSION" | sed 's/~>//')
+          TF_VERSION_NUMERIC=$(echo "$TF_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
+          echo "Terraform version: $TF_VERSION -> Numeric: $TF_VERSION_NUMERIC"
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
+          echo "TF_VERSION_NUMERIC=$TF_VERSION_NUMERIC" >> $GITHUB_ENV
+      - name: Fetch azurerm Provider Version
+        id: get-azurerm-version
+        run: |
+            AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+            MAJOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f1)
+            MINOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f2)
+            PATCH=$(echo "$AZURERM_VERSION" | cut -d '.' -f3)
+            PATCH=${PATCH:-0}  # Default to 0 if missing
+            AZURERM_VERSION_NUMERIC=$((MAJOR * 1000 + MINOR * 10 + PATCH))
+            echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
+            echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+            echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
+
+
+      - name: Send Terraform Version to Datadog
+        run: |
+          TF_VERSION_NUMERIC="${{ env.TF_VERSION_NUMERIC }}"
+          echo "Sending TF_VERSION_NUMERIC: $TF_VERSION_NUMERIC"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                    "metric": "terraform_version",
+                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
+                    "type": "gauge",
+                    "tags": ["source:github", "status:version"]
+                  }]
+                }' \
+            "https://api.us5.datadoghq.com/api/v1/series"
+      - name: Send Azurerm Version to Datadog
+        run: |
+          AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
+          echo "Sending AZURERM_VERSION_NUMERIC: $AZURERM_VERSION_NUMERIC"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                    "metric": "azrm_version",
+                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
+                    "type": "gauge",
+                    "tags": ["source:github", "status:version"]
+                  }]
+                }' \
+            "https://api.us5.datadoghq.com/api/v1/series"
