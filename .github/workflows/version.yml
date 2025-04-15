@@ -40,10 +40,8 @@ jobs:
 
       - name: Send Terraform and Azurerm Version Tags to Datadog
         run: |
-          echo "Sending to Datadog with versions:"
           echo "Terraform: ${TF_VERSION}"
           echo "AzureRM: ${AZURERM_VERSION}"
-
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
