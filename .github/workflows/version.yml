@@ -79,21 +79,15 @@ jobs:
 
       - name: Check GitHub Token Expiry
         run: |
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          EXPIRATION_DATE2="2025-04-15T00:00:00Z"  
-          EXPIRATION_TIMESTAMP2=$(date -d "$EXPIRATION_DATE2" +%s)
-          CURRENT_TIMESTAMP2=$(date +%s)
-          DAYS_UNTIL_EXPIRY2=$((($EXPIRATION_TIMESTAMP2 - $CURRENT_TIMESTAMP2) / 86400))
-          echo "Github PUJA_2 is going to expire in $DAYS_UNTIL_EXPIRY2 days."
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
                   "metric": "days_left",
-                  "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY2"']],
+                  "points": [['"$(date +%s)"', 1]],
                   "type": "gauge",
-                  "tags": ["terraform_version:4.11.2", "azurerm_version:2.64.0"]
+                  "tags": ["terraform_version:${TF_VERSION}", "azurerm_version:${AZURERM_VERSION}"]
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
