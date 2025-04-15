@@ -87,7 +87,7 @@ jobs:
             -d '{
                   "series": [{
                   "metric": "pays_left",
-                  "points": [['"$(date +%s)\"', 1]],
+                  "points": [['"$(date +%s)"', 1]],
                   "type": "gauge",
                   "tags": ["terraform_version:${TF_VERSION}", "azurerm_version:${AZURERM_VERSION}"]
                 }]
