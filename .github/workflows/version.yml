@@ -37,12 +37,13 @@ jobs:
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
-          AZURERM_VERSION=$(terraform providers | grep "azurerm" | awk '{print $2}' | head -n1)
-          AZURERM_VERSION_CLEAN=$(echo "$AZURERM_VERSION" | sed 's/~>//')
-          AZURERM_VERSION_NUMERIC=$(echo "$AZURERM_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
-          echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
-          echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
-          echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
+           AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+           AZURERM_VERSION_CLEAN=$(echo "$AZURERM_VERSION" | sed 's/~>//')
+           AZURERM_VERSION_NUMERIC=$(echo "$AZURERM_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
+           echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
+           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+           echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
+
       - name: Send Terraform Version to Datadog
         run: |
           TF_VERSION_NUMERIC="${{ env.TF_VERSION_NUMERIC }}"
