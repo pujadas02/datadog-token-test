@@ -47,7 +47,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d "{
               \"series\": [{
-                \"metric\": \"versions\",
+                \"metric\": \"ersions\",
                 \"points\": [[\"$(date +%s)\", 1]],
                 \"type\": \"gauge\",
                 \"tags\": [
