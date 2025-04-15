@@ -56,7 +56,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "terraform_version",
+                    "metric": "2terraform_version",
                     "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
@@ -72,7 +72,7 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "azrm_version",
+                    "metric": "2azrm_version",
                     "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
