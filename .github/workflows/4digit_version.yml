@@ -28,11 +28,10 @@ jobs:
         id: get-tf-version
         run: |
           TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
-          TF_VERSION_CLEAN=$(echo "$TF_VERSION" | sed 's/~>//')
-          TF_VERSION_NUMERIC=$(echo "$TF_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
-          echo "Terraform version: $TF_VERSION -> Numeric: $TF_VERSION_NUMERIC"
+          TF_VERSION_NUM=$(echo "$TF_VERSION" | awk -F. '{ printf "%d%02d%02d\n", $1, $2, $3 }')
+          echo "Terraform version detected: $TF_VERSION (numeric: $TF_VERSION_NUM)"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
-          echo "TF_VERSION_NUMERIC=$TF_VERSION_NUMERIC" >> $GITHUB_ENV
+          echo "TF_VERSION_NUM=$TF_VERSION_NUM" >> $GITHUB_ENV
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
