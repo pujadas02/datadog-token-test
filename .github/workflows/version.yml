@@ -20,7 +20,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: "latest"
-          # terraform_wrapper: false
+          terraform_wrapper: false
 
       - name: Initialize Terraform
         run: terraform init
