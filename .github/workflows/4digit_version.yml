@@ -48,20 +48,20 @@ jobs:
 
       - name: Send Terraform Version to Datadog
         run: |
-          TF_VERSION_NUMERIC="${{ env.TF_VERSION_NUMERIC }}"
-          echo "Sending TF_VERSION_NUMERIC: $TF_VERSION_NUMERIC"
+          echo "Sending Terraform version: $TF_VERSION_NUM to Datadog"
           curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "terra_version",
-                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
+                    "metric": "terra.version",
+                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUM"']],
                     "type": "gauge",
-                    "tags": ["source:github", "status:version"]
+                    "tags": ["env:github", "status:version"]
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
+
       - name: Send Azurerm Version to Datadog
         run: |
           AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
