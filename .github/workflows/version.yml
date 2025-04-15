@@ -63,7 +63,7 @@ jobs:
             -d '{
                   "series": [{
                     "metric": "azurerm.provider_version",
-                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
+                    "points": [['"$(date +%s)"', 1]],
                     "type": "gauge",
                     "tags": ["env:github", "status:version"]
                   }]
