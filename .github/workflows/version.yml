@@ -1,4 +1,3 @@
-
 name: Terraform Version Monitoring
 
 on:
@@ -68,10 +67,11 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d '{
                   "series": [{
-                    "metric": "azurerm.provider_version",
+                    "metric": "provider_version",
                     "points": [['"$(date +%s)"', '"'"$AZURERM_VERSION_NUMERIC"'"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
+
