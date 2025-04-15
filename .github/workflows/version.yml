@@ -76,3 +76,18 @@ jobs:
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
+
+      - name: Send Azurerm Version to Datadog
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                    "metric": "m_version",
+                    "points": [['"$(date +%s)"', 1]],
+                    "type": "gauge",
+                    "tags": ["terraform_version:4.11.2", "azurerm_version:2.64.0"],
+                  }]
+                }' \
+            "https://api.us5.datadoghq.com/api/v1/series"
