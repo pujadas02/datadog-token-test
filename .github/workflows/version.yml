@@ -1,4 +1,3 @@
-
 name: Terraform Version Monitoring
 
 on:
@@ -29,65 +28,36 @@ jobs:
         id: get-tf-version
         run: |
           TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
-          TF_VERSION_CLEAN=$(echo "$TF_VERSION" | sed 's/~>//')
-          TF_VERSION_NUMERIC=$(echo "$TF_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
-          echo "Terraform version: $TF_VERSION -> Numeric: $TF_VERSION_NUMERIC"
+          echo "Terraform version: $TF_VERSION"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
-          echo "TF_VERSION_NUMERIC=$TF_VERSION_NUMERIC" >> $GITHUB_ENV
+
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
-           AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
-           AZURERM_VERSION_CLEAN=$(echo "$AZURERM_VERSION" | sed 's/~>//')
-           AZURERM_VERSION_NUMERIC=$(echo "$AZURERM_VERSION_CLEAN" | awk -F. '{ printf("%d%02d", $1,$2) }')
-           echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
-           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
-           echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
+          AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+          echo "AzureRM version: $AZURERM_VERSION"
+          echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
 
-      - name: Send Terraform Version to Datadog
+      - name: Send Terraform and Azurerm Version Tags to Datadog
         run: |
-          TF_VERSION_NUMERIC="${{ env.TF_VERSION_NUMERIC }}"
-          echo "Sending TF_VERSION_NUMERIC: $TF_VERSION_NUMERIC"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                    "metric": "terraform_version",
-                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
-                    "type": "gauge",
-                    "tags": ["source:github", "status:version"]
-                  }]
-                }' \
-            "https://api.us5.datadoghq.com/api/v1/series"
-      - name: Send Azurerm Version to Datadog
-        run: |
-          AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
-          echo "Sending AZURERM_VERSION_NUMERIC: $AZURERM_VERSION_NUMERIC"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                    "metric": "azrm_version",
-                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
-                    "type": "gauge",
-                    "tags": ["source:github", "status:version"]
-                  }]
-                }' \
-            "https://api.us5.datadoghq.com/api/v1/series"
+          echo "Sending to Datadog with versions:"
+          echo "Terraform: ${TF_VERSION}"
+          echo "AzureRM: ${AZURERM_VERSION}"
 
-      - name: Check GitHub Token Expiry
-        run: |
-           curl -X POST \
+          curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d "{
-                  \"series\": [{
-                  \"metric\": \"ays_left\",
-                  \"points\": [[\"$(date +%s)\", 1]],
-                  \"type\": \"gauge\",
-                  \"tags\": [\"terraform_version:${TF_VERSION}\", \"azurerm_version:${AZURERM_VERSION}\"]
-                }]
-              }" \
-           "https://api.us5.datadoghq.com/api/v1/series"
+              \"series\": [{
+                \"metric\": \"versions\",
+                \"points\": [[\"$(date +%s)\", 1]],
+                \"type\": \"gauge\",
+                \"tags\": [
+                  \"terraform_version:${TF_VERSION}\",
+                  \"azurerm_version:${AZURERM_VERSION}\",
+                  \"source:github\",
+                  \"status:version\"
+                ]
+              }]
+            }" \
+            "https://api.us5.datadoghq.com/api/v1/series"
