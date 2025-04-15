@@ -1,87 +1,41 @@
-name: Terraform Pipeline
+name: Terraform Version Monitoring
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      working-directory:
-        description: 'Terraform working directory'
-        required: true
-        default: '.'
 
 jobs:
-  terraform:
-    name: Run Terraform and Report Version
+  monitor-terraform-version:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Setup Terraform
+        
+      - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "latest"
-          terraform_wrapper: false
+          terraform_version: "1.5.7"  
 
-      - name: Terraform Format
-        id: fmt
-        run: terraform fmt -check
-        continue-on-error: true
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
+      - name: Initialize Terraform
+        run: terraform init  
 
-      - name: Terraform Init
-        id: init
-        run: terraform init -upgrade
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
-        working-directory: ${{ inputs.working-directory }}
-        shell: bash
-
-      # Fetch Terraform version from the working directory dynamically
-      - name: Get Terraform Version from Directory
-        id: get-version
+      - name: Fetch Terraform Version
         run: |
           TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
-          echo "Terraform version detected: $TF_VERSION"
-          echo "::set-output name=terraform-version::$TF_VERSION"
-        working-directory: ${{ inputs.working-directory }}
+          echo "Terraform Version: $TF_VERSION"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d '{
+                  "series": [{
+                    "metric": "tform.version",
+                    "points": [['"$(date +%s)"', '"$TF_VERSION"']],
+                    "type": "gauge",
+                    "tags": ["env:github", "status:version"]
+                  }]
+                }' \
+            "https://api.us5.datadoghq.com/api/v1/series"
 
-      # Send Terraform Version to Datadog
-      - name: Send Terraform Version to Datadog
-        run: |
-          TF_VERSION="${{ steps.get-version.outputs.terraform-version }}"
-          echo "Sending Terraform Version: $TF_VERSION"  # Debugging step to print TF version
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "ci.terraform.version",
-                  "points": [['"$(date +%s)"', '"$TF_VERSION"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "status:version", "version:$TF_VERSION"]
-                          }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series"
-      - name: Send Azurerm Version to Datadog
-        run: |
-          AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
-          echo "Sending AZURERM_VERSION: $AZURERM_VERSION"  # Debugging step to print AZURERM_VERSION
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                  "metric": "azm.provider_version",
-                  "points": [['"$(date +%s)"', '"$AZURERM_VERSION"']],
-                  "type": "gauge",
-                  "tags": ["source:github", "status:version"]
-                          }]
-              }' \
-           "https://api.us5.datadoghq.com/api/v1/series"
-      
