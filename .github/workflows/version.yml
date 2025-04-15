@@ -33,7 +33,6 @@ jobs:
           echo "Terraform version: $TF_VERSION -> Numeric: $TF_VERSION_NUMERIC"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
           echo "TF_VERSION_NUMERIC=$TF_VERSION_NUMERIC" >> $GITHUB_ENV
-
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
@@ -43,7 +42,6 @@ jobs:
           echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
           echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
-
       - name: Send Terraform Version to Datadog
         run: |
           TF_VERSION_NUMERIC="${{ env.TF_VERSION_NUMERIC }}"
@@ -54,13 +52,12 @@ jobs:
             -d '{
                   "series": [{
                     "metric": "terraform.version",
-                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
+                    "points": [['"$(date +%s)"', '"'"$TF_VERSION_NUMERIC"'"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
-
       - name: Send Azurerm Version to Datadog
         run: |
           AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
@@ -71,13 +68,12 @@ jobs:
             -d '{
                   "series": [{
                     "metric": "provider_version",
-                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
+                    "points": [['"$(date +%s)"', '"'"$AZURERM_VERSION_NUMERIC"'"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
-
 
 
 
