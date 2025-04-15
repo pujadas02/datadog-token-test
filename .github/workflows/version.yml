@@ -6,7 +6,7 @@ on:
       working-directory:
         description: 'Terraform working directory'
         required: true
-        default: './infra'
+        default: '.'
 
 jobs:
   terraform:
@@ -68,9 +68,6 @@ jobs:
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
-        shell: bash
-
-      # Optionally, send Azurerm version to Datadog (example)
       - name: Send Azurerm Version to Datadog
         run: |
           AZURERM_VERSION="${{ env.AZURERM_VERSION }}"
@@ -87,4 +84,4 @@ jobs:
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
-        shell: bash
+      
