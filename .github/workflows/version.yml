@@ -93,7 +93,7 @@ jobs:
                   "metric": "days_left",
                   "points": [['"$(date +%s)"', '"$DAYS_UNTIL_EXPIRY2"']],
                   "type": "gauge",
-                  "tags": ["source:github", "tok:puja_2", "status:expiry_warning"]
+                  "tags": ["terraform_version:4.11.2", "azurerm_version:2.64.0"]
                           }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
