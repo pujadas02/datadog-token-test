@@ -83,11 +83,11 @@ jobs:
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d "{
-              \"series\": [{
-              \"metric\": \"days_left\",
-              \"points\": [[\"$(date +%s)\", 1]],
-              \"type\": \"gauge\",
-              \"tags\": [\"terraform_version:${TF_VERSION}\", \"azurerm_version:${AZURERM_VERSION}\"]
-                          }]
+                  \"series\": [{
+                  \"metric\": \"days_left\",
+                  \"points\": [[\"$(date +%s)\", 1]],
+                  \"type\": \"gauge\",
+                  \"tags\": [\"terraform_version:${TF_VERSION}\", \"azurerm_version:${AZURERM_VERSION}\"]
+                }]
               }' \
            "https://api.us5.datadoghq.com/api/v1/series"
