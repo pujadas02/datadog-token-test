@@ -20,6 +20,7 @@ jobs:
         with:
           terraform_version: "latest"
           terraform_wrapper: false
+
       - name: Initialize Terraform
         run: terraform init  # Initialize Terraform
 
@@ -28,18 +29,17 @@ jobs:
         run: |
           TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
           echo "Terraform version detected: $TF_VERSION"
-          echo "::set-output name=terraform-version::$TF_VERSION"
+          echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV  # Use new way to set env variable
 
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
           AZURERM_VERSION=$(terraform providers | grep "azurerm" | awk '{print $2}')
           echo "azurerm provider version detected: $AZURERM_VERSION"
-          echo "::set-output name=azurerm-version::$AZURERM_VERSION"
+          echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV  # Use new way to set env variable
 
       - name: Send Terraform Version to Datadog
         run: |
-          TF_VERSION="${{ steps.get-tf-version.outputs.terraform-version }}"
           echo "Sending Terraform version: $TF_VERSION to Datadog"
           curl -X POST \
             -H "Content-Type: application/json" \
@@ -56,7 +56,6 @@ jobs:
 
       - name: Send azurerm Version to Datadog
         run: |
-          AZURERM_VERSION="${{ steps.get-azurerm-version.outputs.azurerm-version }}"
           echo "Sending azurerm version: $AZURERM_VERSION to Datadog"
           curl -X POST \
             -H "Content-Type: application/json" \
