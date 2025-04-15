@@ -32,19 +32,26 @@ jobs:
           echo "Terraform version detected: $TF_VERSION (numeric: $TF_VERSION_NUM)"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
           echo "TF_VERSION_NUM=$TF_VERSION_NUM" >> $GITHUB_ENV
+      # - name: Fetch azurerm Provider Version
+      #   id: get-azurerm-version
+      #   run: |
+      #       AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+      #       MAJOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f1)
+      #       MINOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f2)
+      #       PATCH=$(echo "$AZURERM_VERSION" | cut -d '.' -f3)
+      #       PATCH=${PATCH:-0}  # Default to 0 if missing
+      #       AZURERM_VERSION_NUMERIC=$((MAJOR * 1000 + MINOR * 10 + PATCH))
+      #       echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
+      #       echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+      #       echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
       - name: Fetch azurerm Provider Version
         id: get-azurerm-version
         run: |
-            AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
-            MAJOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f1)
-            MINOR=$(echo "$AZURERM_VERSION" | cut -d '.' -f2)
-            PATCH=$(echo "$AZURERM_VERSION" | cut -d '.' -f3)
-            PATCH=${PATCH:-0}  # Default to 0 if missing
-            AZURERM_VERSION_NUMERIC=$((MAJOR * 1000 + MINOR * 10 + PATCH))
-            echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
-            echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
-            echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
-
+           AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+           AZURERM_VERSION_NUMERIC=$(echo "$AZURERM_VERSION" | awk -F. '{p=($3=="")?0:$3; printf("%d\n", $1*1000 + $2*10 + p)}')
+           echo "azurerm version: $AZURERM_VERSION -> Numeric: $AZURERM_VERSION_NUMERIC"
+           echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+           echo "AZURERM_VERSION_NUMERIC=$AZURERM_VERSION_NUMERIC" >> $GITHUB_ENV
 
       - name: Send Terraform Version to Datadog
         run: |
