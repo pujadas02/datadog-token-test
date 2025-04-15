@@ -54,7 +54,7 @@ jobs:
             -d '{
                   "series": [{
                     "metric": "terraform.version",
-                    "points": [['"$(date +%s)"', '"'"$TF_VERSION_NUMERIC"'"']],
+                    "points": [['"$(date +%s)"', '"$TF_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
                   }]
@@ -71,7 +71,7 @@ jobs:
             -d '{
                   "series": [{
                     "metric": "provider_version",
-                    "points": [['"$(date +%s)"', '"'"$AZURERM_VERSION_NUMERIC"'"']],
+                    "points": [['"$(date +%s)"', '"$AZURERM_VERSION_NUMERIC"']],
                     "type": "gauge",
                     "tags": ["source:github", "status:version"]
                   }]
