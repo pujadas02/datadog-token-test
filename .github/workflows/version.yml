@@ -1,0 +1,78 @@
+name: Terraform Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      terraform-version:
+        description: 'Terraform version'
+        required: true
+        default: '1.5.7'
+      working-directory:
+        description: 'Terraform working directory'
+        required: true
+        default: '.'
+
+jobs:
+  terraform:
+    name: Run Terraform and Report Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+          terraform_wrapper: false
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -upgrade
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+      - name: Send Terraform Version to Datadog
+        run: |
+          echo "Getting Terraform version..."
+          TF_VERSION=$(terraform version -json | jq -r '.terraform_version')
+          VALUE=${TF_VERSION//./}
+          TIMESTAMP=$(date +%s)
+
+          echo "Sending version $TF_VERSION as $VALUE to Datadog..."
+
+          curl -X POST "https://api.datadoghq.com/api/v1/series" \
+            -H "Content-Type: application/json" \
+            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+            -d @- <<EOF
+          {
+            "series": [
+              {
+                "metric": "ci.terraform.version",
+                "points": [[${TIMESTAMP}, ${VALUE}]],
+                "type": "gauge",
+                "tags": [
+                  "env:prod",
+                  "workflow:terraform-pipeline",
+                  "version:${TF_VERSION}",
+                  "directory:${{ inputs.working-directory }}"
+                ],
+                "host": "${{ runner.name }}"
+              }
+            ]
+          }
+          EOF
+        shell: bash
