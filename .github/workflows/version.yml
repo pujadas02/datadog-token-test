@@ -48,7 +48,7 @@ jobs:
             -d "{
               \"series\": [{
                 \"metric\": \"versions\",
-                \"points\": [[\"$(date +%s)\", " "]],
+                \"points\": [[\"$(date +%s)\", 1]],
                 \"type\": \"gauge\",
                 \"tags\": [
                   \"terraform_version:${TF_VERSION}\",
