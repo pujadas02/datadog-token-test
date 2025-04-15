@@ -89,5 +89,5 @@ jobs:
                   \"type\": \"gauge\",
                   \"tags\": [\"terraform_version:${TF_VERSION}\", \"azurerm_version:${AZURERM_VERSION}\"]
                 }]
-              }' \
+              }" \
            "https://api.us5.datadoghq.com/api/v1/series"
