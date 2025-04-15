@@ -79,6 +79,8 @@ jobs:
 
       - name: Check GitHub Token Expiry
         run: |
+           echo "Terraform version: $TF_VERSION"
+           echo "AzureRM version: $AZURERM_VERSION"
            curl -X POST \
             -H "Content-Type: application/json" \
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
