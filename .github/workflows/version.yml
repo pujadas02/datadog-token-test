@@ -64,23 +64,41 @@ jobs:
                   }]
                 }' \
             "https://api.us5.datadoghq.com/api/v1/series"
-
       - name: Send Azurerm Version to Datadog
         run: |
-          AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
-          echo "Sending AZURERM_VERSION_NUMERIC: $AZURERM_VERSION_NUMERIC"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
-            -d '{
-                  "series": [{
-                    "metric": "provider_version",
-                    "points": [['"$(date +%s)"', '"'"$AZURERM_VERSION_NUMERIC"'"']],
-                    "type": "gauge",
-                    "tags": ["source:github", "status:version"]
-                  }]
-                }' \
-            "https://api.us5.datadoghq.com/api/v1/series"
+            AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
+            TIMESTAMP=$(date +%s)
+            echo "Sending AZURERM_VERSION_NUMERIC: $AZURERM_VERSION_NUMERIC at $TIMESTAMP"
+
+            curl -X POST \
+                          -H "Content-Type: application/json" \
+                              -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+                               -d "{
+                                         \"series\": [{
+                                          \"metric\": \"azurerm.provider_version\",
+                                            \"points\": [[$TIMESTAMP, $AZURERM_VERSION_NUMERIC]],
+                                                \"type\": \"gauge\",
+                                            \"tags\": [\"source:github\", \"status:version\"]
+                                                }]
+                                        }" \
+                              "https://api.us5.datadoghq.com/api/v1/series"
+
+      # - name: Send Azurerm Version to Datadog
+      #   run: |
+      #     AZURERM_VERSION_NUMERIC="${{ env.AZURERM_VERSION_NUMERIC }}"
+      #     echo "Sending AZURERM_VERSION_NUMERIC: $AZURERM_VERSION_NUMERIC"
+      #     curl -X POST \
+      #       -H "Content-Type: application/json" \
+      #       -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
+      #       -d '{
+      #             "series": [{
+      #               "metric": "provider_version",
+      #               "points": [['"$(date +%s)"', '"'"$AZURERM_VERSION_NUMERIC"'"']],
+      #               "type": "gauge",
+      #               "tags": ["source:github", "status:version"]
+      #             }]
+      #           }' \
+      #       "https://api.us5.datadoghq.com/api/v1/series"
 
 
 # name: Terraform Version Monitoring
