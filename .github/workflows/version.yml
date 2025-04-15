@@ -47,8 +47,8 @@ jobs:
             -H "DD-API-KEY: ${{ secrets.DATADOG_API_KEY }}" \
             -d "{
               \"series\": [{
-                \"metric\": \"rsions\",
-                \"points\": [[\"$(date +%s)\"]],
+                \"metric\": \"versions\",
+                \"points\": [[\"$(date +%s)\", 0]],
                 \"type\": \"gauge\",
                 \"tags\": [
                   \"terraform_version:${TF_VERSION}\",
