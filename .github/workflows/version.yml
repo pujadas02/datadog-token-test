@@ -40,6 +40,8 @@ jobs:
 
       - name: Send Terraform and Azurerm Version Tags to Datadog
         run: |
+          REPO_NAME="${{ github.repository }}"
+          PIPELINE_NAME="${{ github.workflow }}"
           echo "Terraform: ${TF_VERSION}"
           echo "AzureRM: ${AZURERM_VERSION}"
           curl -X POST \
@@ -51,10 +53,11 @@ jobs:
                 \"points\": [[\"$(date +%s)\", 0]],
                 \"type\": \"gauge\",
                 \"tags\": [
+                  \"repo:${REPO_NAME}\",
+                  \"pipeline:${PIPELINE_NAME}\",
                   \"terraform_version:${TF_VERSION}\",
                   \"azurerm_version:${AZURERM_VERSION}\",
-                  \"source:github\",
-                  \"status:version\"
+                  \"source:github\"
                 ]
               }]
             }" \
