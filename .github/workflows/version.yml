@@ -31,15 +31,16 @@ jobs:
           echo "Terraform version: $TF_VERSION"
           echo "TF_VERSION=$TF_VERSION" >> $GITHUB_ENV
 
-      - name: Fetch azurerm Provider Version
-        id: get-azurerm-version
-        run: |
-          AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
-          echo "AzureRM version: $AZURERM_VERSION"
-          echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
+      # - name: Fetch azurerm Provider Version
+      #   id: get-azurerm-version
+      #   run: |
+      #     AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
+      #     echo "AzureRM version: $AZURERM_VERSION"
+      #     echo "AZURERM_VERSION=$AZURERM_VERSION" >> $GITHUB_ENV
 
       - name: Send Terraform and Azurerm Version Tags to Datadog
         run: |
+         AZURERM_VERSION=$(grep 'provider "registry.terraform.io/hashicorp/azurerm"' -A 5 .terraform.lock.hcl | grep version | awk '{print $3}' | tr -d '"')
           REPO_NAME="${{ github.repository }}"
           PIPELINE_NAME="${{ github.workflow }}"
           echo "Terraform: ${TF_VERSION}"
@@ -53,12 +54,7 @@ jobs:
                 \"points\": [[\"$(date +%s)\", 0]],
                 \"type\": \"gauge\",
                 \"tags\": [
-                  \"repo:${REPO_NAME}\",
-                  \"pipeline:${PIPELINE_NAME}\",
-                  \"terraform_version:${TF_VERSION}\",
-                  \"azurerm_version:${AZURERM_VERSION}\",
-                  \"source:github\"
-                ]
+                  \"repo:${REPO_NAME}\", \"pipeline:${PIPELINE_NAME}\", \"terraform_version:${TF_VERSION}\", \"azurerm_version:${AZURERM_VERSION}\" ]
               }]
             }" \
             "https://api.us5.datadoghq.com/api/v1/series"
